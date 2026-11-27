@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import vn.rikkei.cinemabox.payment.PaymentFailedException;
 
 /**
  * Xử lý lỗi tập trung: chuyển exception thành ApiError.
@@ -45,9 +46,14 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "Body không phải JSON hợp lệ", req, List.of());
     }
 
+    @ExceptionHandler(PaymentFailedException.class)
+    public ResponseEntity<ApiError> handlePaymentFailed(PaymentFailedException ex, HttpServletRequest req) {
+        return build(HttpStatus.PAYMENT_REQUIRED, "PAYMENT_FAILED", ex.getMessage(), req, List.of());
+    }
+
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiError> handleConflict(ConflictException ex, HttpServletRequest req) {
-        return build(HttpStatus.CONFLICT, "CONFLICT", ex.getMessage(), req, List.of());
+        return build(HttpStatus.CONFLICT, ex.getCode(), ex.getMessage(), req, List.of());
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
